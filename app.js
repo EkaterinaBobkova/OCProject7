@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const { Sequelize } = require('sequelize');// on récupère sequelize
+
 const bodyParser = require('body-parser');
 
 // recuperation de Helmet (sécurise les appli Express en définissant divers en-têtes HTTPP, protège contre les failles XSS//
@@ -10,7 +10,8 @@ const cors = require('cors');
 //environnement variables//
 require('dotenv').config() 
 
-
+//DB connection//
+require("./database_connection");
 
 /* CROSS ORIGIN RESOURCE SHARING CORS*/
 app.use((req, res, next) => {
