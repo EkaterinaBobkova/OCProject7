@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 const sequelize = require('../database_connection.js'); 
 
 const fs = require('fs'); 
-const ArticleModelBuilder = require('../models/Article');
+
+
 
 // LOGIQUE METIER //
 
