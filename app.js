@@ -10,6 +10,11 @@ const cors = require('cors');
 //environnement variables//
 require('dotenv').config() 
 
+
+const userRoutes = require('./routes/user');
+const publicationRoutes = require('./routes/publication');
+const path = require('path');
+
 //DB connection//
 // require("./database_connection");
 
@@ -28,6 +33,10 @@ app.use(bodyParser.json());
 app.use(helmet());
 app.use(cors());
 
+//  ENDPOINTS CHEMIN D'ACCES //
+app.use('/api/auth', userRoutes);
+app.use('/api/publications', publicationRoutes);
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 
 module.exports = app;
