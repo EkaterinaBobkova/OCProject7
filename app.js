@@ -16,7 +16,7 @@ const publicationRoutes = require('./routes/publication');
 const path = require('path');
 
 //DB connection//
-// require("./database_connection");
+require("./database_connection");
 
 /* CROSS ORIGIN RESOURCE SHARING CORS*/
 app.use((req, res, next) => {

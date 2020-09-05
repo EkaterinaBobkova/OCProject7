@@ -13,19 +13,16 @@ const { models } = require('../database_connection.js');
 //POST//
 exports.createPublication = (req, res, next) => {
   const Publication = PublicationModelBuilder(sequelize);
-  const publicationObject = JSON.parse(req.body.publication);
-  delete publicationObject._id;
-  const publication = new Publication({
-      ...publicationObject,
-      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+  const publicationObject = JSON.parse(req.body.publication); 
+  const publication = new Publication({ 
+    idUSERS : publicationObject.userId,
+    title : publicationObject.title,
+    content : publicationObject.content,
+    attachment : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
   });
   publication.save()
-      .then(() => res.status(201).json({
-          message: 'publication enregistrée'
-      }))
-      .catch(error => res.status(400).json({
-          error
-      }));
+    .then(() => res.status(201).json({ message: 'publication enregistrée' }))
+    .catch(error => res.status(400).json({ error : "erreur createPublication" }));
 };
 
 //  GET //
@@ -35,7 +32,7 @@ exports.getAllPublication = (req, res, next) => {
   const models = {Publication, User}; 
   User.associate(models); 
   Publication.associate(models); 
-  Publication.findAll({order: sequelize.literal('(createdAt) DESC'), include: {model : models.User, attributes: ['username']} }) // ordonné par ordre de mise à jour inverse + Association table Users (uniquement le username !)
+  Publication.findAll({order: sequelize.literal('(createdAt) DESC'), include: {model : models.User, attributes: ['username']} }) 
     .then(publications => res.status(200).json(publications))
     .catch(error => res.status(400).json({ error : "gettallpublication" }));
 
@@ -49,7 +46,7 @@ exports.getOnePublication = (req, res, next) => {
   const models = {Publication, User}; 
   User.associate(models); 
   Publication.associate(models);
-  Publication.findOne({ where:{ id: req.params.id } , include: {model : models.User, attributes: ['username']} }) // récupération d'un Publication unique en incluant l'user (JOIN) raw SQL : SELECT * FROM Publications JOIN users;
+  Publication.findOne({ where:{ id: req.params.id } , include: {model : models.User, attributes: ['username']} })
     .then(publication => {
        res.status(200).json(publication);
     }  
@@ -66,7 +63,7 @@ exports.getSelection = (req, res, next) => {
   const models = {Publication, User}; 
   User.associate(models); 
   Publication.associate(models); 
-  Publication.findAll({ where:{ selection : true }, order: sequelize.random(), include: {model : models.User, attributes: ['username']} })// récuparation de la liste complète des Publications en associant l'user
+  Publication.findAll({ where:{ selection : true }, order: sequelize.random(), include: {model : models.User, attributes: ['username']} })
     .then(publications => res.status(200).json(publications))
     .catch(error => res.status(400).json({ error : "gettallpublication" }));
 };
