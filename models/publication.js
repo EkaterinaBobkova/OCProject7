@@ -1,8 +1,8 @@
 'use strict';
 const {
-  Model
+  Model, DataTypes
 } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
+module.exports = (sequelize) => {
   class Publication extends Model {
     /**
      * Helper method for defining associations.
@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Publication.init({
-    idUSERS: DataTypes.INTEGER,
     title: DataTypes.STRING,
     content: DataTypes.STRING,
     attachment: DataTypes.STRING,
@@ -29,3 +28,4 @@ module.exports = (sequelize, DataTypes) => {
   });
   return Publication;
 };
+

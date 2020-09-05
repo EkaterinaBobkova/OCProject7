@@ -5,6 +5,7 @@ require('dotenv').config()
 
 const sequelize = new Sequelize('groupomania', process.env.DB_NAME, process.env.DB_MDP,{ 
     host: 'localhost',
+    port: 3307,
   dialect: 'mysql',
   operatorsAliases: false
 });

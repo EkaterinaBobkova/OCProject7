@@ -8,22 +8,25 @@ const { models } = require('../database_connection.js');
 
 // LOGIQUE MÉTIER //
 
-// POST //
+
+
+//POST//
 exports.createPublication = (req, res, next) => {
   const Publication = PublicationModelBuilder(sequelize);
-  const publicationObject = JSON.parse(req.body.publication); 
-  const publication = new Publication({ 
-    idUSERS : publicationObject.userId,
-    title : publicationObject.title,
-    text : publicationObject.text,
-    file : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+  const publicationObject = JSON.parse(req.body.publication);
+  delete publicationObject._id;
+  const publication = new Publication({
+      ...publicationObject,
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
   });
   publication.save()
-    .then(() => res.status(201).json({ message: 'Publication enregistré' }))
-    .catch(error => res.status(400).json({ error : "erreur createPublication" }));
+      .then(() => res.status(201).json({
+          message: 'publication enregistrée'
+      }))
+      .catch(error => res.status(400).json({
+          error
+      }));
 };
-
-
 
 //  GET //
 exports.getAllPublication = (req, res, next) => {
@@ -83,3 +86,4 @@ exports.selectPublication = (req, res, next) => {
         
       }).catch(error => res.status(400).json({ error }))
 };
+
