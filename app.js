@@ -11,7 +11,7 @@ const cors = require('cors');
 require('dotenv').config() 
 
 //DB connection//
-require("./database_connection");
+// require("./database_connection");
 
 /* CROSS ORIGIN RESOURCE SHARING CORS*/
 app.use((req, res, next) => {
