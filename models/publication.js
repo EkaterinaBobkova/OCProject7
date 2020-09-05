@@ -10,12 +10,12 @@ module.exports = (sequelize) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      models.Article.belongsTo(models.User,{
+      models.Publication.belongsTo(models.User,{
         foreignKey: 'idUSERS'
       })
     }
   };
-  
+
   Publication.init({
     title: DataTypes.STRING,
     content: DataTypes.STRING,
