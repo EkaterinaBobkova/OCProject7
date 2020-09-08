@@ -16,14 +16,9 @@ router.post ('/', auth, multer, publicationCtrl.createPublication);
 router.get('/', auth, publicationCtrl.getAllPublication); 
 
 
-// GET SELECTION //
-router.get('/selection', auth, publicationCtrl.getSelection);
-
 // GET ONE //
 router.get('/:id', auth,  publicationCtrl.getOnePublication); 
 
-// PUT MODERATEUR //
-router.put('/select/:id', auth, publicationCtrl.selectPublication); 
 
 
 // EXPORT //
