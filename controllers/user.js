@@ -74,7 +74,7 @@ exports.deleteUser = (req, res, next) => {
                         return res.status(401).json({ error: 'Mot de passe incorrect !' });
                     }else {
                             
-                            Publication.findAll({ where:{ idUSERS: req.body.userId } }) 
+                            Publication.findAll({ where:{ id: req.body.userId } }) 
                             .then(publications => { 
                               
                                  for (let a in publications){

@@ -15,7 +15,6 @@ exports.createPublication = (req, res, next) => {
   const Publication = PublicationModelBuilder(sequelize);
   const publicationObject = JSON.parse(req.body.publication); 
   const publication = new Publication({ 
-    idUSERS : publicationObject.userId,
     title : publicationObject.title,
     content : publicationObject.content,
     attachment : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
@@ -25,6 +24,8 @@ exports.createPublication = (req, res, next) => {
     .catch(error => res.status(400).json({ error : "erreur createPublication" }));
 };
 
+
+
 //  GET //
 exports.getAllPublication = (req, res, next) => {
   const Publication = PublicationModelBuilder(sequelize);
@@ -32,9 +33,9 @@ exports.getAllPublication = (req, res, next) => {
   const models = {Publication, User}; 
   User.associate(models); 
   Publication.associate(models); 
-  Publication.findAll({order: sequelize.literal('(createdAt) DESC'), include: {model : models.User, attributes: ['username']} }) 
+  Publication.findAll({order: sequelize.literal('(createdPub) DESC'), include: {model : models.User, attributes: ['username']} }) 
     .then(publications => res.status(200).json(publications))
-    .catch(error => res.status(400).json({ error : "gettallpublication" }));
+    .catch(error => console.log(error)|| res.status(400).json({ error : "gettallpublication" }));
 
 };
 

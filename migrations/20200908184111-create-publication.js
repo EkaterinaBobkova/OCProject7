@@ -8,29 +8,16 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      
       title: {
-        allowNull: false,
         type: Sequelize.STRING
       },
       content: {
-        allowNull: false,
         type: Sequelize.STRING
       },
-      idUSERS:{
-        allowNull: true,
-        type: Sequelize.INTEGER,
-        references:{
-          model:'Users',
-          key:'id',
-        }
-      },
       attachment: {
-        allowNull: true,
         type: Sequelize.STRING
       },
       likes: {
-        allowNull: true,
         type: Sequelize.INTEGER
       },
       createdAt: {

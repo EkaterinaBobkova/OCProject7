@@ -11,7 +11,7 @@ module.exports = (sequelize) => {
      */
     static associate(models) {
       models.Publication.belongsTo(models.User,{
-        foreignKey: 'idUSERS'
+        
       })
     }
   };
@@ -19,7 +19,6 @@ module.exports = (sequelize) => {
   Publication.init({
     title: DataTypes.STRING,
     content: DataTypes.STRING,
-    idUSERS: DataTypes.INTEGER,
     attachment: DataTypes.STRING,
     likes: DataTypes.INTEGER
   }, {
@@ -28,4 +27,3 @@ module.exports = (sequelize) => {
   });
   return Publication;
 };
-
