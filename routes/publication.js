@@ -19,6 +19,8 @@ router.get('/', auth, publicationCtrl.getAllPublication);
 // GET ONE //
 router.get('/:id', auth,  publicationCtrl.getOnePublication); 
 
+// DELETE //
+router.delete('/:id', auth,  publicationCtrl.deletePublication); 
 
 
 // EXPORT //

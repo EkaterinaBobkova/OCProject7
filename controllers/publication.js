@@ -43,6 +43,8 @@ exports.getAllPublication = (req, res, next) => {
 
 
 
+
+
 // GET ONE //
 exports.getOnePublication = (req, res, next) => {
   const Publication = PublicationModelBuilder(sequelize);
@@ -61,3 +63,18 @@ exports.getOnePublication = (req, res, next) => {
 
 
 
+/* DELETE */
+
+exports.deletePublication = (req, res, next) => {
+  const Publication = PublicationModelBuilder(sequelize);
+  Publication.findOne({ where:{ id: req.params.id } }) 
+    .then(publication => { 
+      const filename = publication.file.split('/images/')[1]; 
+      fs.unlink(`images/${filename}`, () => { 
+        Publication.destroy({ where:{ id: req.params.id } }) 
+          .then(() => res.status(200).json({ message: 'Publication supprimée !' }))
+          .catch(error => res.status(400).json({ error }));
+      });
+    })
+    .catch(error => res.status(500).json({ error }));
+}; 

@@ -12,6 +12,7 @@ module.exports = (sequelize) => {
     static associate(models) {
       models.Publication.belongsTo(models.User,{
         
+        
       })
     }
   };
@@ -24,6 +25,8 @@ module.exports = (sequelize) => {
   }, {
     sequelize,
     modelName: 'Publication',
+    
   });
+
   return Publication;
 };
