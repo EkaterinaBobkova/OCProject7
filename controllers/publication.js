@@ -35,7 +35,7 @@ exports.getAllPublication = (req, res, next) => {
   const models = {Publication, User}; 
   User.associate(models); 
   Publication.associate(models); 
-  Publication.findAll({order: sequelize.literal('(createdPub) DESC'), include: {model : models.User, attributes: ['username']} }) 
+  Publication.findAll({order: sequelize.literal('(createdAt) DESC'), include: {model : models.User, attributes: ['username']} }) 
     .then(publications => res.status(200).json(publications))
     .catch(error => console.log(error) || res.status(400).json({ error : "gettallpublication" }));
 
