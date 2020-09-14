@@ -61,6 +61,25 @@ exports.getOnePublication = (req, res, next) => {
 };
 
 
+/* PUT ### PROJET D'EVOLUTION ### */
+exports.modifyPublication = (req, res, next) => {
+  const Publication = PublicationModelBuilder(sequelize);
+    const publicationObject = JSON.parse(req.body.publication);
+  
+    Publication.findOne({ where:{ id: req.params.id } })
+      .then(publication => {
+        const filename = publication.file.split('/images/')[1];
+        fs.unlink(`images/${filename}`, () => {
+          Publication.update({ 
+            title : publicationObject.title,
+            content : publicationObject.text,
+            file : `${req.protocol}://${req.get('host')}/images/${req.file.filename}` 
+          },{ where:{ id: req.params.id } }) 
+            .then(() => res.status(200).json({ message: 'Publication et image modifiée' }))
+            .catch(error => res.status(400).json({ error }));
+        });
+      }).catch(error => res.status(400).json({ error }))
+}; 
 
 
 /* DELETE */
