@@ -16,7 +16,7 @@ console.log(Object.keys(db));
 exports.createPublication = async (req, res, next) => {
   const Publication = db.Publication;
   // const publicationObject = JSON.parse(req.body.publication); 
-  const user = await db.User.findOne({where: {id: request.body.userId}});
+  const user = await db.User.findOne({where: {id: req.body.userId}});
   const publication = new Publication({ 
     title : req.body.title,
     content : req.body.content,
