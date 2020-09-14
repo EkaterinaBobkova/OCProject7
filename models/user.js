@@ -11,6 +11,7 @@ module.exports = (sequelize) => {
      */
     static associate(models) {
       models.User.hasMany(models.Publication)
+      console.log("test");
     }
   };
   User.init({

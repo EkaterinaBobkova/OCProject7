@@ -5,23 +5,27 @@ const fs = require('fs');
 const sequelize = require('../database_connection.js');
 
 const { models } = require('../database_connection.js');
+const db = require('../models/index.js');
+console.log(Object.keys(db));
 
 // LOGIQUE MÉTIER //
 
 
 
 //POST//
-exports.createPublication = (req, res, next) => {
-  const Publication = PublicationModelBuilder(sequelize);
+exports.createPublication = async (req, res, next) => {
+  const Publication = db.Publication;
   // const publicationObject = JSON.parse(req.body.publication); 
+  const user = await db.User.findOne({where: {id: request.body.userId}});
   const publication = new Publication({ 
     title : req.body.title,
     content : req.body.content,
     // attachment : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
   });
+  publication.setUser(user);
   publication.save()
     .then(() => res.status(201).json({ message: 'publication enregistrée' }))
-    .catch(error => res.status(400).json({ error : "erreur createPublication" }));
+    .catch(error => res.status(400).json({ error : error.message }));
 };
 
 
@@ -30,12 +34,8 @@ exports.createPublication = (req, res, next) => {
 
 //  GET //
 exports.getAllPublication = (req, res, next) => {
-  const Publication = PublicationModelBuilder(sequelize);
-  const User = UserModelBuilder(sequelize); 
-  const models = {Publication, User}; 
-  User.associate(models); 
-  Publication.associate(models); 
-  Publication.findAll({order: sequelize.literal('(createdAt) DESC'), include: {model : models.User, attributes: ['username']} }) 
+  
+  db.Publication.findAll({order: sequelize.literal('(createdAt) DESC'), include: {model : db.User, attributes: ['username']} }) 
     .then(publications => res.status(200).json(publications))
     .catch(error => console.log(error) || res.status(400).json({ error : "gettallpublication" }));
 
@@ -47,12 +47,8 @@ exports.getAllPublication = (req, res, next) => {
 
 // GET ONE //
 exports.getOnePublication = (req, res, next) => {
-  const Publication = PublicationModelBuilder(sequelize);
-  const User = UserModelBuilder(sequelize); 
-  const models = {Publication, User}; 
-  User.associate(models); 
-  Publication.associate(models);
-  Publication.findOne({ where:{ id: req.params.id } , include: {model : models.User, attributes: ['username']} })
+  
+  db.Publication.findOne({ where:{ id: req.params.id } , include: {model : db.User, attributes: ['username']} })
     .then(publication => {
        res.status(200).json(publication);
     }  
@@ -61,18 +57,18 @@ exports.getOnePublication = (req, res, next) => {
 };
 
 
-/* PUT ### PROJET D'EVOLUTION ### */
+//PUT //
 exports.modifyPublication = (req, res, next) => {
-  const Publication = PublicationModelBuilder(sequelize);
+  
     const publicationObject = JSON.parse(req.body.publication);
   
-    Publication.findOne({ where:{ id: req.params.id } })
+    db.Publication.findOne({ where:{ id: req.params.id } })
       .then(publication => {
         const filename = publication.file.split('/images/')[1];
         fs.unlink(`images/${filename}`, () => {
-          Publication.update({ 
+          db.Publication.update({ 
             title : publicationObject.title,
-            content : publicationObject.text,
+            content : publicationObject.content,
             file : `${req.protocol}://${req.get('host')}/images/${req.file.filename}` 
           },{ where:{ id: req.params.id } }) 
             .then(() => res.status(200).json({ message: 'Publication et image modifiée' }))
@@ -82,15 +78,15 @@ exports.modifyPublication = (req, res, next) => {
 }; 
 
 
-/* DELETE */
+// DELETE //
 
 exports.deletePublication = (req, res, next) => {
-  const Publication = PublicationModelBuilder(sequelize);
-  Publication.findOne({ where:{ id: req.params.id } }) 
+
+  db.Publication.findOne({ where:{ id: req.params.id } }) 
     .then(publication => { 
       const filename = publication.file.split('/images/')[1]; 
       fs.unlink(`images/${filename}`, () => { 
-        Publication.destroy({ where:{ id: req.params.id } }) 
+        db.Publication.destroy({ where:{ id: req.params.id } }) 
           .then(() => res.status(200).json({ message: 'Publication supprimée !' }))
           .catch(error => res.status(400).json({ error }));
       });
