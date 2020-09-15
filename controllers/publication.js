@@ -1,10 +1,10 @@
-const PublicationModelBuilder = require('../models/Publication');
-const UserModelBuilder = require('../models/User'); 
+const Publication = require('../models/Publication');
+const User = require('../models/User'); 
 
 const fs = require('fs'); 
-const sequelize = require('../database_connection.js');
+// const sequelize = require('../database_connection.js');
 
-const { models } = require('../database_connection.js');
+// const { models } = require('../database_connection.js');
 const db = require('../models/index.js');
 console.log(Object.keys(db));
 
@@ -16,7 +16,7 @@ console.log(Object.keys(db));
 exports.createPublication = async (req, res, next) => {
   const Publication = db.Publication;
   // const publicationObject = JSON.parse(req.body.publication); 
-  const user = await db.User.findOne({where: {id: req.body.userId}});
+  const user = await db.User.findOne({WHERE: {id: req.body.userId}});
   const publication = new Publication({ 
     title : req.body.title,
     content : req.body.content,
@@ -27,6 +27,7 @@ exports.createPublication = async (req, res, next) => {
     .then(() => res.status(201).json({ message: 'publication enregistrée' }))
     .catch(error => res.status(400).json({ error : error.message }));
 };
+
 
 
 
@@ -58,38 +59,63 @@ exports.getOnePublication = (req, res, next) => {
 
 
 //PUT //
-exports.modifyPublication = (req, res, next) => {
-  
-    const publicationObject = JSON.parse(req.body.publication);
-  
-    db.Publication.findOne({ where:{ id: req.params.id } })
-      .then(publication => {
-        const filename = publication.file.split('/images/')[1];
-        fs.unlink(`images/${filename}`, () => {
-          db.Publication.update({ 
-            title : publicationObject.title,
-            content : publicationObject.content,
-            file : `${req.protocol}://${req.get('host')}/images/${req.file.filename}` 
-          },{ where:{ id: req.params.id } }) 
-            .then(() => res.status(200).json({ message: 'Publication et image modifiée' }))
-            .catch(error => res.status(400).json({ error }));
-        });
-      }).catch(error => res.status(400).json({ error }))
-}; 
 
+
+exports.modifyPublication = async (req, res) => {
+  try {
+      const publication = await db.Publication.findOne({ WHERE: {
+          id: req.params.id
+      }})        
+      if (req.file) {
+          const filename = publication.imageUrl.split('/images/')[1]
+          fs.unlink(`images/${filename}`, (err) => {
+              if (err) throw err;
+              console.log('Image modifiée')
+          })
+      }
+      const publicationObject = req.file ? {
+          ...JSON.parse(req.body.publication),
+          imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+      } : {
+         ...JSON.parse(req.body.publication) 
+      }
+      if (publication && publication.userId !== req.userId) {
+          return res.sendStatus(401);
+      }
+      await db.Publication.update({
+          ...publicationObject, 
+          id: req.params.id}
+      )
+      res.status(200).send({ message: "Publication modifiée"})
+  } catch (err) {
+      res.sendStatus(500)    
+  }
+}
 
 // DELETE //
 
-exports.deletePublication = (req, res, next) => {
-
-  db.Publication.findOne({ where:{ id: req.params.id } }) 
-    .then(publication => { 
-      const filename = publication.file.split('/images/')[1]; 
-      fs.unlink(`images/${filename}`, () => { 
-        db.Publication.destroy({ where:{ id: req.params.id } }) 
-          .then(() => res.status(200).json({ message: 'Publication supprimée !' }))
-          .catch(error => res.status(400).json({ error }));
-      });
-    })
-    .catch(error => res.status(500).json({ error }));
-}; 
+exports.deletePublication = async (req, res) => {
+  try {
+      const publication = await db.Publication.findOne({ where: {
+          id: req.params.id
+      }})
+      if (publication.imageUrl) {
+          const filename = publication.imageUrl.split('/images/')[1]
+          fs.unlink(`images/${filename}`, (err) => {
+              if (err) throw err;
+              console.log('Image supprimée')
+          })
+      }
+      if (publication && publication.userId !== req.userId) {
+          return res.sendStatus(401);
+      }
+      await db.Publication.destroy({ where: {
+          id: req.params.id
+      }})
+      
+      
+      res.status(200).send({ message: "Publication supprimée"})
+  } catch (err) {
+      res.status(500).send(err)
+  }
+}
