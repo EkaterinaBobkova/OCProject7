@@ -64,42 +64,27 @@ exports.getOnePublication = (req, res, next) => {
 
 
 exports.modifyPublication = async (req, res) => {
-  try {
-      const publication = await db.Publication.findOne({ WHERE: {
-          id: req.params.id
-      }})        
-      if (req.file) {
-          const filename = publication.imageUrl.split('/images/')[1]
-          fs.unlink(`images/${filename}`, (err) => {
-              if (err) throw err;
-              console.log('Image modifiée')
-          })
-      }
-      const publicationObject = req.file ? {
-          ...JSON.parse(req.body.publication),
-          imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-      } : {
-         ...JSON.parse(req.body.publication) 
-      }
-      if (publication && publication.userId !== req.userId) {
-          return res.sendStatus(401);
-      }
-      await db.Publication.update({
-          ...publicationObject,
-          id: req.params.id}
-      )
-      res.status(200).send({ message: "Publication modifiée"})
-  } catch (err) {
-      res.sendStatus(err)
   
+    try {
+      
+  
+      await db.Publication.findOne({
+        where: { id: (req.params.id) } 
+        });
+
+        await db.Publication.update({ 
+            title: req.body.title, 
+            content: req.body.content,
+            attachment:req.body.attachment 
+          },{where: {id: (req.params.id)}});
+          
+        return res.status(200).send({ message: "Publication modifiée"})
+    }
+  
+    catch(err){
+      return res.status(500).json (err);
+    } 
   }
-}
-
-
-
-
-
-
 // DELETE //
 
 exports.deletePublication = async (req, res) => {
