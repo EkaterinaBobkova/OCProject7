@@ -20,7 +20,7 @@ exports.createPublication = async (req, res, next) => {
   const publication = new Publication({ 
     title : req.body.title,
     content : req.body.content,
-    // attachment : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    attachment : `${req.protocol}://${req.get('host')}/images/${req.body.filename}`
   });
   publication.setUser(user);
   publication.save()
@@ -58,6 +58,8 @@ exports.getOnePublication = (req, res, next) => {
 };
 
 
+
+
 //PUT //
 
 
@@ -83,14 +85,20 @@ exports.modifyPublication = async (req, res) => {
           return res.sendStatus(401);
       }
       await db.Publication.update({
-          ...publicationObject, 
+          ...publicationObject,
           id: req.params.id}
       )
       res.status(200).send({ message: "Publication modifiée"})
   } catch (err) {
-      res.sendStatus(500)    
+      res.sendStatus(err)
+  
   }
 }
+
+
+
+
+
 
 // DELETE //
 
