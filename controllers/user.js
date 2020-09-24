@@ -73,7 +73,7 @@ exports.signup = (req, res, next) => {
 
 exports.deleteUser = async (req,res,next) => {
   try {
-     await  db.User.destroy({ // Supprimer le fichier de la BDD//
+     await  db.User.destroy({ 
           where: { id: Number(req.params.id) }
       })
       return res.status(200).send({ message: "Utilisateur supprimé"})

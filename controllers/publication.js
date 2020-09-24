@@ -13,24 +13,43 @@ console.log(Object.keys(db));
 
 
 //POST//
-exports.createPublication = async (req, res, next) => {
-  const Publication = db.Publication;
-  // const publicationObject = JSON.parse(req.body.publication); 
-  const user = await db.User.findOne({WHERE: {id: req.body.userId}});
-  const publication = new Publication({ 
-    title : req.body.title,
-    content : req.body.content,
-    attachment : `${req.protocol}://${req.get('host')}/images/${req.body.filename}`
-  });
-  publication.setUser(user);
-  publication.save()
-    .then(() => res.status(201).json({ message: 'publication enregistrée' }))
-    .catch(error => res.status(400).json({ error : error.message }));
-};
+// exports.createPublication = async (req, res, next) => {
+//   const Publication = db.Publication;
+//   // const publicationObject = JSON.parse(req.body.publication); 
+//   const user = await db.User.findOne({WHERE: {id: req.body.userId}});
+//   const publication = new Publication({ 
+//     title : req.body.title,
+//     content : req.body.content,
+//     attachment : `${req.protocol}://${req.get('host')}/images/${req.body.filename}`
+//   });
+//   publication.setUser(user);
+//   publication.save()
+//     .then(() => res.status(201).json({ message: 'publication enregistrée' }))
+//     .catch(error => res.status(400).json({ error : error.message }));
+// };
 
 
 
+exports.createPublication = async(req,res,next) => {
 
+    try {
+        const user = await db.User.findOne({WHERE: {id: req.body.userId}});
+     await db.Publication.create({
+        UserId: req.id,
+      title:req.body.title,
+      content:req.body.content,
+      attachment : `${req.protocol}://${req.get('host')}/images/${req.body.filename}`
+    })
+    publication.setUser(user);
+    publication.save()
+      return res.status(200).json({ message: 'publication enregistrée' })
+    }
+    catch(err){
+      console.log( err); 
+      return res.status(500).json ({ error: Error.message= 'Utilisateur existe pas!' });
+    }
+     
+  }
 
 
 //  GET //
@@ -87,28 +106,41 @@ exports.modifyPublication = async (req, res) => {
   }
 // DELETE //
 
-exports.deletePublication = async (req, res) => {
-  try {
-      const publication = await db.Publication.findOne({ where: {
-          id: req.params.id
-      }})
-      if (publication.imageUrl) {
-          const filename = publication.imageUrl.split('/images/')[1]
-          fs.unlink(`images/${filename}`, (err) => {
-              if (err) throw err;
-              console.log('Image supprimée')
-          })
-      }
-      if (publication && publication.userId !== req.userId) {
-          return res.sendStatus(401);
-      }
-      await db.Publication.destroy({ where: {
-          id: req.params.id
-      }})
+// exports.deletePublication = async (req, res) => {
+//   try {
+//       const publication = await db.Publication.findOne({ where: {
+//           id: req.params.id
+//       }})
+//       if (publication.imageUrl) {
+//           const filename = publication.imageUrl.split('/images/')[1]
+//           fs.unlink(`images/${filename}`, (err) => {
+//               if (err) throw err;
+//               console.log('Image supprimée')
+//           })
+//       }
+//       if (publication && publication.userId !== req.userId) {
+//           return res.sendStatus(401);
+//       }
+//       await db.Publication.destroy({ where: {
+//           id: req.params.id
+//       }})
       
       
-      res.status(200).send({ message: "Publication supprimée"})
-  } catch (err) {
-      res.status(500).send(err)
-  }
-}
+//       res.status(200).send({ message: "Publication supprimée"})
+//   } catch (err) {
+//       res.status(500).send(err)
+//   }
+// }
+
+exports.deletePublication = async (req,res,next) => {  
+    try {
+      await db.Publication.destroy({
+        where: {id: (req.params.id)}
+      });
+      return res.status(200).send({ message: "Publication supprimée"})
+    }
+    catch(err){
+      console.log(err);
+      return res.status(500).json ({err});
+    }
+  }  
