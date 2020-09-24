@@ -2,10 +2,13 @@ const UserModelBuilder = require('../models/User');
 const {DataTypes} = require('sequelize');
 const bcrypt = require('bcrypt'); 
 const jwt = require('jsonwebtoken'); 
-const sequelize = require('../database_connection.js'); 
+
 
 const fs = require('fs'); 
-const PublicationModelBuilder = require('../models/Publication');
+
+const db = require('../models/index.js');
+console.log(Object.keys(db));
+
 
 
 
@@ -13,7 +16,7 @@ const PublicationModelBuilder = require('../models/Publication');
 
 // SIGNUP DES UTILISATEURS //
 exports.signup = (req, res, next) => {
-    const User = UserModelBuilder(sequelize);
+    const User = db.User;
 
     bcrypt.hash(req.body.password, 10) 
         .then(hash => { 
@@ -32,72 +35,50 @@ exports.signup = (req, res, next) => {
 
 
 // LOGIN DES UTILISATEURS //
-exports.login = (req, res, next) => {
-    const User = UserModelBuilder(sequelize);
-    User.findOne({ email: req.body.email })
-      .then(user => {
-        if (!user) {
-          return res.status(401).json({ error: 'Utilisateur non trouvé !' });
-        }
-        bcrypt.compare(req.body.password, user.password)
-          .then(valid => {
-            if (!valid) {
-              return res.status(401).json({ error: 'Mot de passe incorrect !' });
-            }
-            res.status(200).json({
-              userId: user._id,
-              token: jwt.sign(
-                { userId: user._id },
-                process.env.KEY_TOKEN,
-                { expiresIn: '24h' }
-              )
-            });
-          })
-          .catch(error => res.status(500).json({ error }));
+
+
+  exports.login = (req, res, next) => {
+    const user = db.User;
+    let email= req.body.email;
+    let password= req.body.password;
+    if (email ==null || password == null){
+      res.status(400).json({message: 'Il manque un paramètre ! '});
+    }
+    db.User.findOne({
+          where: { email: email }
       })
-      .catch(error => res.status(500).json({ error }));
+          .then(user => {
+              if (user) {
+                  bcrypt.compare(password, user.password, (errBcrypt, resBcrypt) => {
+                      if (resBcrypt) {
+                          res.status(200).json({
+                              userId: user.id,
+                              token: jwt.sign({userId: user.id}, process.env.KEY_TOKEN,{
+                                  expiresIn:"24h",
+                              })
+                          })
+                      } else {
+                          res.status(403).json({ error: 'invalid password' });
+                      };
+                  })
+              } else {
+                  res.status(404).json({ 'erreur': 'Cet utilisateur n\'existe pas' })
+              }
+          })
+          .catch(err => { res.status(500).json({ err }) })
   };
 
 
 // DELETE USER //
-exports.deleteUser = (req, res, next) => {
-    const User = UserModelBuilder(sequelize);
-    const Publication = PublicationModelBuilder(sequelize);
-    User.findOne({ where: {id: req.body.userId, email: req.body.email } }) 
-        .then(user => {
-            if (!user) { 
-                return res.status(401).json({ error: 'Utilisateur non trouvé !' });
-            }
-            bcrypt.compare(req.body.password, user.password) 
-                .then(valid => { 
-                    if (!valid) {
-                        return res.status(401).json({ error: 'Mot de passe incorrect !' });
-                    }else {
-                            
-                            Publication.findAll({ where:{ id: req.body.userId } }) 
-                            .then(publications => { 
-                              
-                                 for (let a in publications){
-                                  
-                                    const pub = publications[a];
-                                  
-                                    const filename = pub.dataValues.file.split('/images/')[1]; 
-                                
-                                    fs.unlink(`images/${filename}`, () => { 
-                                        Publication.destroy({ where:{ id: pub.dataValues.id } }) 
-                                        .then(() => res.status(200).json({ message: 'Publication supprimée !' }))
-                                        .catch(error => res.status(400).json({ error : 'publicationdestroy' }));
-                                    });
-                                };
-                            })
-                            .catch(error => res.status(500).json({ error : "pas de publication trouvée publicationfindall" }));
-                      
-                            User.destroy({ where: {email: req.body.email} }) 
-                                .then(() => res.status(200).json({ message: 'Utilisateur supprimé !' }))
-                                .catch(error => res.status(400).json({ error })); 
-                    }
-                })
-                .catch(error => res.status(500).json({ error }));
-        })
-        .catch(error => res.status(500).json({ error }));
-};
+
+exports.deleteUser = async (req,res,next) => {
+  try {
+     await  db.User.destroy({ // Supprimer le fichier de la BDD//
+          where: { id: Number(req.params.id) }
+      })
+      return res.status(200).send({ message: "Utilisateur supprimé"})
+  }
+  catch(err){
+      return res.status(500).json({ err});
+  }          
+}
