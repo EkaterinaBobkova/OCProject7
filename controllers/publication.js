@@ -1,7 +1,7 @@
 const Publication = require('../models/Publication');
-const User = require('../models/User'); 
+const User = require('../models/User');
 
-const fs = require('fs'); 
+const fs = require('fs');
 // const sequelize = require('../database_connection.js');
 
 // const { models } = require('../database_connection.js');
@@ -30,34 +30,51 @@ console.log(Object.keys(db));
 
 
 
-exports.createPublication = async(req,res,next) => {
+exports.createPublication = async (req, res, next) => {
 
-    try {
-        const user = await db.User.findOne({WHERE: {id: req.body.userId}});
-     await db.Publication.create({
-        UserId: req.id,
-      title:req.body.title,
-      content:req.body.content,
-      attachment : `${req.protocol}://${req.get('host')}/images/${req.body.filename}`
+  try {
+    const user = await db.User.findOne({
+      WHERE: {
+        id: req.body.userId
+      }
+    });
+   
+    const publication = await db.Publication.create({
+      UserId: req.id,
+      title: req.body.title,
+      content: req.body.content,
+      attachment: `${req.body.inputFile}`
     })
     publication.setUser(user);
     publication.save()
-      return res.status(200).json({ message: 'publication enregistrée' })
-    }
-    catch(err){
-      console.log( err); 
-      return res.status(500).json ({ error: Error.message= 'Utilisateur existe pas!' });
-    }
-     
+    return res.status(200).json({
+      message: 'publication enregistrée'
+    })
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      error: Error.message = 'Utilisateur existe pas!'
+    });
   }
+
+}
+
 
 
 //  GET //
 exports.getAllPublication = (req, res, next) => {
-  
-  db.Publication.findAll({order: sequelize.literal('(createdAt) DESC'), include: {model : db.User, attributes: ['username']} }) 
+
+  db.Publication.findAll({
+      order: sequelize.literal('(createdAt) DESC'),
+      include: {
+        model: db.User,
+        attributes: ['username']
+      }
+    })
     .then(publications => res.status(200).json(publications))
-    .catch(error => console.log(error) || res.status(400).json({ error : "gettallpublication" }));
+    .catch(error => console.log(error) || res.status(400).json({
+      error: "gettallpublication"
+    }));
 
 };
 
@@ -67,13 +84,22 @@ exports.getAllPublication = (req, res, next) => {
 
 // GET ONE //
 exports.getOnePublication = (req, res, next) => {
-  
-  db.Publication.findOne({ where:{ id: req.params.id } , include: {model : db.User, attributes: ['username']} })
+
+  db.Publication.findOne({
+      where: {
+        id: req.params.id
+      },
+      include: {
+        model: db.User,
+        attributes: ['username']
+      }
+    })
     .then(publication => {
-       res.status(200).json(publication);
-    }  
-    )
-    .catch(error => res.status(400).json({ error }));
+      res.status(200).json(publication);
+    })
+    .catch(error => res.status(400).json({
+      error
+    }));
 };
 
 
@@ -83,27 +109,33 @@ exports.getOnePublication = (req, res, next) => {
 
 
 exports.modifyPublication = async (req, res) => {
-  
-    try {
-      
-  
-      await db.Publication.findOne({
-        where: { id: (req.params.id) } 
-        });
 
-        await db.Publication.update({ 
-            title: req.body.title, 
-            content: req.body.content,
-            attachment:req.body.attachment 
-          },{where: {id: (req.params.id)}});
-          
-        return res.status(200).send({ message: "Publication modifiée"})
-    }
-  
-    catch(err){
-      return res.status(500).json (err);
-    } 
+  try {
+
+
+    await db.Publication.findOne({
+      where: {
+        id: (req.params.id)
+      }
+    });
+
+    await db.Publication.update({
+      title: req.body.title,
+      content: req.body.content,
+      attachment: req.body.attachment
+    }, {
+      where: {
+        id: (req.params.id)
+      }
+    });
+
+    return res.status(200).send({
+      message: "Publication modifiée"
+    })
+  } catch (err) {
+    return res.status(500).json(err);
   }
+}
 // DELETE //
 
 // exports.deletePublication = async (req, res) => {
@@ -124,23 +156,28 @@ exports.modifyPublication = async (req, res) => {
 //       await db.Publication.destroy({ where: {
 //           id: req.params.id
 //       }})
-      
-      
+
+
 //       res.status(200).send({ message: "Publication supprimée"})
 //   } catch (err) {
 //       res.status(500).send(err)
 //   }
 // }
 
-exports.deletePublication = async (req,res,next) => {  
-    try {
-      await db.Publication.destroy({
-        where: {id: (req.params.id)}
-      });
-      return res.status(200).send({ message: "Publication supprimée"})
-    }
-    catch(err){
-      console.log(err);
-      return res.status(500).json ({err});
-    }
-  }  
+exports.deletePublication = async (req, res, next) => {
+  try {
+    await db.Publication.destroy({
+      where: {
+        id: (req.params.id)
+      }
+    });
+    return res.status(200).send({
+      message: "Publication supprimée"
+    })
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      err
+    });
+  }
+}
