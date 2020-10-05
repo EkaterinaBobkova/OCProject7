@@ -1,10 +1,10 @@
 const UserModelBuilder = require('../models/User');
 const {DataTypes} = require('sequelize');
-const bcrypt = require('bcrypt'); 
-const jwt = require('jsonwebtoken'); 
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 
-const fs = require('fs'); 
+const fs = require('fs');
 
 const db = require('../models/index.js');
 console.log(Object.keys(db));
@@ -18,12 +18,12 @@ console.log(Object.keys(db));
 exports.signup = (req, res, next) => {
     const User = db.User;
 
-    bcrypt.hash(req.body.password, 10) 
-        .then(hash => { 
-            const user = new User({ 
+    bcrypt.hash(req.body.password, 10)
+        .then(hash => {
+            const user = new User({
                 username: req.body.username,
-                email: req.body.email, 
-                password: hash, 
+                email: req.body.email,
+                password: hash,
             });
             user.save()
                 .then(() => res.status(201).json({ message: 'Utilisateur crée' }))
@@ -41,6 +41,7 @@ exports.signup = (req, res, next) => {
     const user = db.User;
     let email= req.body.email;
     let password= req.body.password;
+
     if (email ==null || password == null){
       res.status(400).json({message: 'Il manque un paramètre ! '});
     }
@@ -58,7 +59,7 @@ exports.signup = (req, res, next) => {
                               })
                           })
                       } else {
-                          res.status(403).json({ error: 'invalid password' });
+                          res.status(403).json({ error: 'invalid password ', password: password, user: user, errBcrypt: errBcrypt, resBcrypt: resBcrypt });
                       };
                   })
               } else {
@@ -73,12 +74,12 @@ exports.signup = (req, res, next) => {
 
 exports.deleteUser = async (req,res,next) => {
   try {
-     await  db.User.destroy({ 
+     await  db.User.destroy({
           where: { id: Number(req.params.id) }
       })
       return res.status(200).send({ message: "Utilisateur supprimé"})
   }
   catch(err){
       return res.status(500).json({ err});
-  }          
+  }
 }

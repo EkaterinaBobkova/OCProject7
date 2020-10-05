@@ -1,183 +1,144 @@
-const Publication = require('../models/Publication');
-const User = require('../models/User');
+'use strict';
 
-const fs = require('fs');
-// const sequelize = require('../database_connection.js');
+// Une inclusion pour les gouverner tous
+const models = require('../models/index.js');
 
-// const { models } = require('../database_connection.js');
-const db = require('../models/index.js');
-console.log(Object.keys(db));
+// Inclusion des services
+const userManager = require('../services/user/userManager');
+const publicationManager = require('../services/publication/publicationManager');
 
-// LOGIQUE MÉTIER //
+// On utilise le token pour identifier la personne qui publie le commentaire
+const jwt = require('jsonwebtoken');
 
+exports.createPublication = (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.KEY_TOKEN);
+    const userId = decodedToken.userId;
 
+    // Recherche de l'utilisateur courant
+    return userManager
+        .findOne({
+            'id': userId
+        })
+        .then(user => {
+            // On vérifie le retour de la requête sql
+            if (null == user) {
+                return res.status(400).json({
+                    'error': 'Utilisateur non trouvé.',
+                    'userId': userId
+                })
+            }
 
-//POST//
-// exports.createPublication = async (req, res, next) => {
-//   const Publication = db.Publication;
-//   // const publicationObject = JSON.parse(req.body.publication); 
-//   const user = await db.User.findOne({WHERE: {id: req.body.userId}});
-//   const publication = new Publication({ 
-//     title : req.body.title,
-//     content : req.body.content,
-//     attachment : `${req.protocol}://${req.get('host')}/images/${req.body.filename}`
-//   });
-//   publication.setUser(user);
-//   publication.save()
-//     .then(() => res.status(201).json({ message: 'publication enregistrée' }))
-//     .catch(error => res.status(400).json({ error : error.message }));
-// };
+            let data = {
+                'UserId': userId,
+                'title': req.body.title,
+                'content': req.body.content,
+                'attachment': `${req.body.inputFile}`
+            };
 
-
-
-exports.createPublication = async (req, res, next) => {
-
-  try {
-    const user = await db.User.findOne({
-      WHERE: {
-        id: req.body.userId
-      }
-    });
-   
-    const publication = await db.Publication.create({
-      UserId: req.id,
-      title: req.body.title,
-      content: req.body.content,
-      attachment: `${req.body.inputFile}`
-    })
-    publication.setUser(user);
-    publication.save()
-    return res.status(200).json({
-      message: 'publication enregistrée'
-    })
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      error: Error.message = 'Utilisateur existe pas!'
-    });
-  }
-
+            // Création d'une publication
+            return publicationManager
+                .create(data)
+                .then((newPost) => {
+                    return res.status(200).json({
+                        'user': user,
+                        'newPost': newPost
+                    })
+                })
+                .catch((error) => {
+                    return res.status(400).json({
+                        'error': error,
+                        'user': user,
+                        'data': data
+                    })
+                });
+        })
+        .catch(error => {
+            return res.status(500).json({
+                'error': error,
+                'userId': userId
+            }) 
+        });
 }
 
-
-
-//  GET //
 exports.getAllPublication = (req, res, next) => {
 
-  db.Publication.findAll({
-      order: sequelize.literal('(createdAt) DESC'),
-      include: {
-        model: db.User,
-        attributes: ['username']
-      }
+    models.Publication.findAll({
+        order: sequelize.literal('(createdAt) DESC'),
+        include: {
+            model: models.User,
+            attributes: ['username']
+        }
     })
-    .then(publications => res.status(200).json(publications))
-    .catch(error => console.log(error) || res.status(400).json({
-      error: "gettallpublication"
-    }));
-
+        .then(publications => res.status(200).json(publications))
+        .catch(error => res.status(400).json({
+            error: "gettallpublication",
+            error: error
+        }));
 };
 
-
-
-
-
-// GET ONE //
 exports.getOnePublication = (req, res, next) => {
 
-  db.Publication.findOne({
-      where: {
-        id: req.params.id
-      },
-      include: {
-        model: db.User,
-        attributes: ['username']
-      }
+    models.Publication.findOne({
+        where: {
+            id: req.params.id
+        },
+        include: {
+            model: models.User,
+            attributes: ['username']
+        }
     })
-    .then(publication => {
-      res.status(200).json(publication);
-    })
-    .catch(error => res.status(400).json({
-      error
-    }));
+        .then(publication => {
+            res.status(200).json(publication);
+        })
+        .catch(error => res.status(400).json({
+            error
+        }));
 };
-
-
-
-
-//PUT //
-
 
 exports.modifyPublication = async (req, res) => {
 
-  try {
+    try {
 
 
-    await db.Publication.findOne({
-      where: {
-        id: (req.params.id)
-      }
-    });
+        await models.Publication.findOne({
+            where: {
+                id: (req.params.id)
+            }
+        });
 
-    await db.Publication.update({
-      title: req.body.title,
-      content: req.body.content,
-      attachment: req.body.attachment
-    }, {
-      where: {
-        id: (req.params.id)
-      }
-    });
+        await models.Publication.update({
+            title: req.body.title,
+            content: req.body.content,
+            attachment: req.body.attachment
+        }, {
+            where: {
+                id: (req.params.id)
+            }
+        });
 
-    return res.status(200).send({
-      message: "Publication modifiée"
-    })
-  } catch (err) {
-    return res.status(500).json(err);
-  }
+        return res.status(200).send({
+            message: "Publication modifiée"
+        })
+    } catch (err) {
+        return res.status(500).json(err);
+    }
 }
-// DELETE //
-
-// exports.deletePublication = async (req, res) => {
-//   try {
-//       const publication = await db.Publication.findOne({ where: {
-//           id: req.params.id
-//       }})
-//       if (publication.imageUrl) {
-//           const filename = publication.imageUrl.split('/images/')[1]
-//           fs.unlink(`images/${filename}`, (err) => {
-//               if (err) throw err;
-//               console.log('Image supprimée')
-//           })
-//       }
-//       if (publication && publication.userId !== req.userId) {
-//           return res.sendStatus(401);
-//       }
-//       await db.Publication.destroy({ where: {
-//           id: req.params.id
-//       }})
-
-
-//       res.status(200).send({ message: "Publication supprimée"})
-//   } catch (err) {
-//       res.status(500).send(err)
-//   }
-// }
 
 exports.deletePublication = async (req, res, next) => {
-  try {
-    await db.Publication.destroy({
-      where: {
-        id: (req.params.id)
-      }
-    });
-    return res.status(200).send({
-      message: "Publication supprimée"
-    })
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      err
-    });
-  }
+    try {
+        await models.Publication.destroy({
+            where: {
+                id: (req.params.id)
+            }
+        });
+        return res.status(200).send({
+            message: "Publication supprimée"
+        })
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            err
+        });
+    }
 }
