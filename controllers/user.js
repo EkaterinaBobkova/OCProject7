@@ -1,5 +1,4 @@
-const UserModelBuilder = require('../models/User');
-const {DataTypes} = require('sequelize');
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -73,13 +72,37 @@ exports.signup = (req, res, next) => {
 // DELETE USER //
 
 exports.deleteUser = async (req,res,next) => {
-  try {
-     await  db.User.destroy({
-          where: { id: Number(req.params.id) }
-      })
-      return res.status(200).send({ message: "Utilisateur supprimé"})
+    try {
+       await  db.User.destroy({
+            where: { id: Number(req.params.id) }
+        })
+        return res.status(200).send({ message: "Utilisateur supprimé"})
+    }
+    catch(err){
+        return res.status(500).json({ err});
+    }
   }
-  catch(err){
-      return res.status(500).json({ err});
-  }
-}
+
+// GET ONE USER //
+
+  exports.getOneUser = (req, res, next) => {
+    const token = req.headers.authorization.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.KEY_TOKEN);
+    const userId = decodedToken.userId;
+    db.User.findOne({
+       where: {
+          id: userId,
+       },
+    })
+       .then((user) => res.status(200).json({ user }))
+       .catch((err) => res.status(401).json({ err }));
+ };
+
+
+ // GET ALL USERS //
+
+ exports.getAllUsers = (req, res, next) => {
+    db.User.findAll()
+       .then((users) => res.status(200).json({ users }))
+       .catch((err) => res.status(401).json({ err }));
+ };

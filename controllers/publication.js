@@ -33,6 +33,7 @@ exports.createPublication = (req, res, next) => {
                 'UserId': userId,
                 'title': req.body.title,
                 'content': req.body.content,
+                'likes': req.body.likes,
                 'attachment': `${req.body.inputFile}`
             };
 
