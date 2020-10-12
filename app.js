@@ -13,7 +13,6 @@ require('dotenv').config()
 
 const userRoutes = require('./routes/user');
 const publicationRoutes = require('./routes/publication');
-const ReactRoutes = require('./routes/like');
 const adminRoutes = require('./routes/admin');
 const path = require('path');
 
@@ -38,7 +37,6 @@ app.use(cors());
 //  ENDPOINTS CHEMIN D'ACCES //
 app.use('/api/auth', userRoutes);
 app.use('/api/publications', publicationRoutes);
-app.use('/api/react', ReactRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
