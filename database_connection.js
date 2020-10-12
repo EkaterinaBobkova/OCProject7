@@ -1,19 +1,17 @@
-  
+  const Sequelize = require('sequelize');
+  require('dotenv').config()
 
-const Sequelize = require('sequelize');
-require('dotenv').config() 
-
-const sequelize = new Sequelize('groupomania', process.env.DB_NAME, process.env.DB_MDP,{ 
-    host: 'localhost',
-    port: 3307,
-  dialect: 'mysql',
-  operatorsAliases: false
-});
+  const sequelize = new Sequelize('groupomania', process.env.DB_NAME, process.env.DB_MDP, {
+      host: 'localhost',
+      port: 3307,
+      dialect: 'mysql',
+      operatorsAliases: false
+  });
 
 
-sequelize.authenticate()
-  .then(() => console.log('Connection has been established successfully.'))
-  .catch((err) => console.log('Unable to connect to the database:', err));
+  sequelize.authenticate()
+      .then(() => console.log('Connection has been established successfully.'))
+      .catch((err) => console.log('Unable to connect to the database:', err));
 
 
   module.exports = sequelize;

@@ -10,7 +10,7 @@ const multer = require('../middleware/multer-config');
 // ROUTES //
 
 // POST //
-router.post ('/', auth, multer, likeCtrl.reactPublication); 
+router.post ('/:id', auth, multer, likeCtrl.reactPublication); 
 
 
 

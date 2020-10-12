@@ -58,19 +58,19 @@ exports.createPublication = (req, res, next) => {
             return res.status(500).json({
                 'error': error,
                 'userId': userId
-            }) 
+            })
         });
 }
 
 exports.getAllPublication = (req, res, next) => {
 
     models.Publication.findAll({
-        order: sequelize.literal('(createdAt) DESC'),
-        include: {
-            model: models.User,
-            attributes: ['username']
-        }
-    })
+            order: sequelize.literal('(createdAt) DESC'),
+            include: {
+                model: models.User,
+                attributes: ['username']
+            }
+        })
         .then(publications => res.status(200).json(publications))
         .catch(error => res.status(400).json({
             error: "gettallpublication",
@@ -81,14 +81,14 @@ exports.getAllPublication = (req, res, next) => {
 exports.getOnePublication = (req, res, next) => {
 
     models.Publication.findOne({
-        where: {
-            id: req.params.id
-        },
-        include: {
-            model: models.User,
-            attributes: ['username']
-        }
-    })
+            where: {
+                id: req.params.id
+            },
+            include: {
+                model: models.User,
+                attributes: ['username']
+            }
+        })
         .then(publication => {
             res.status(200).json(publication);
         })
