@@ -65,7 +65,8 @@ exports.createPublication = (req, res, next) => {
 exports.getAllPublication = (req, res, next) => {
 
     models.Publication.findAll({
-            order: sequelize.literal('(createdAt) DESC'),
+        
+            order: sequelize.literal('updatedAt DESC'),
             include: {
                 model: models.User,
                 attributes: ['username']
